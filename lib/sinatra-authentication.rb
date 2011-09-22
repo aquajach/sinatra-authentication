@@ -103,14 +103,18 @@ module Sinatra
           if Rack.const_defined?('Flash')
             error_fields = []
             ["username","email","password_confirmation","password", "name", "birthday", "phone", "education", "university", "curriculum"].each do |property|
-              puts "#{property}========#{@user.errors[property].class}=========#{@user.errors}"
               if @user.errors[property] and !@user.errors[property].empty?
                 error_fields << en_to_cn(property)
               end
             end
-            flash[:notice] = "您的下列注册资料出现问题:<br> #{error_fields.compact.join("、")}."
+            flash[:notice] = "您的下列注册资料出现问题:<br> #{error_fields.compact.join("、")}." unless error_fields.compact.empty?
           end
-          redirect '/signup?' + hash_to_query_string(params['user'])
+          if error_fields.compact.empty?
+            redirect '/apologise'
+          else
+            redirect '/signup?' + hash_to_query_string(params['user'])
+          end
+
         end
       end
 
