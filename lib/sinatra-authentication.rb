@@ -92,7 +92,7 @@ module Sinatra
       app.post '/signup' do
         params[:user][:birthday] = Date.strptime(params[:user][:birthday], "%Y-%m-%d") if params[:birth][:year].to_i * params[:birth][:month].to_i * params[:birth][:day].to_i != 0
         p "-----------------#{params[:user]}"
-        @user = User.set(params[:user])
+        @user = DmUser.create(params[:user])
         if @user.valid && @user.id
           session[:user] = @user.id
           if Rack.const_defined?('Flash')
@@ -102,9 +102,9 @@ module Sinatra
         else
           if Rack.const_defined?('Flash')
             error_fields = []
-            ["username","email","password_confirmation","password" "name", "birthday", "phone", "education", "university", "curriculum"].each do |property|
-
-              unless @user.errors[property]
+            ["username","email","password_confirmation","password", "name", "birthday", "phone", "education", "university", "curriculum"].each do |property|
+              puts "#{property}========#{@user.errors[property].class}=========#{@user.errors}"
+              if @user.errors[property] and !@user.errors[property].empty?
                 error_fields << en_to_cn(property)
               end
             end
