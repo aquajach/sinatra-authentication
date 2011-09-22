@@ -1,6 +1,7 @@
+# encoding: utf-8
 require 'sinatra/base'
 require 'pathname'
-require Pathname(__FILE__).dirname.expand_path.to_s + "/models/abstract_user"
+require Pathname(__FILE__).dirname.expand_path + "models/abstract_user"
 
 module Sinatra
   module SinatraAuthentication
@@ -50,7 +51,7 @@ module Sinatra
       end
 
       app.post '/login' do
-        if user = User.authenticate(params[:email], params[:password])
+        if user = User.authenticate(params[:username], params[:password])
           session[:user] = user.id
 
           if Rack.const_defined?('Flash')
@@ -62,13 +63,13 @@ module Sinatra
             session[:return_to] = false
             redirect redirect_url
           else
-            redirect '/'
+            redirect '/apologise'
           end
         else
           if Rack.const_defined?('Flash')
             flash[:notice] = "The email or password you entered is incorrect."
           end
-          redirect '/login'
+          redirect '/'
         end
       end
 
@@ -89,16 +90,25 @@ module Sinatra
       end
 
       app.post '/signup' do
+        params[:user][:birthday] = Date.strptime(params[:user][:birthday], "%Y-%m-%d") if params[:birth][:year].to_i * params[:birth][:month].to_i * params[:birth][:day].to_i != 0
+        p "-----------------#{params[:user]}"
         @user = User.set(params[:user])
         if @user.valid && @user.id
           session[:user] = @user.id
           if Rack.const_defined?('Flash')
             flash[:notice] = "Account created."
           end
-          redirect '/'
+          redirect '/apologise'
         else
           if Rack.const_defined?('Flash')
-            flash[:notice] = "There were some problems creating your account: #{@user.errors}."
+            error_fields = []
+            ["username","email","password_confirmation","password" "name", "birthday", "phone", "education", "university", "curriculum"].each do |property|
+
+              unless @user.errors[property]
+                error_fields << en_to_cn(property)
+              end
+            end
+            flash[:notice] = "您的下列注册资料出现问题:<br> #{error_fields.compact.join("、")}."
           end
           redirect '/signup?' + hash_to_query_string(params['user'])
         end
@@ -187,6 +197,32 @@ module Sinatra
   end
 
   module Helpers
+    def en_to_cn(en)
+      case en
+        when "username"
+          "用户名"
+        when "email"
+          "电子邮箱"
+        when "password_confirmation"
+          "密码确认"
+        when "password"
+          "密码"
+        when "name"
+          "中文姓名"
+        when  "birthday"
+          "生日"
+        when  "phone"
+          "电话"
+        when  "education"
+          "最高学历或课程种类"
+        when  "university"
+          "最后毕业学校或学校名称"
+        when  "curriculum"
+          "专业"
+      end
+
+    end
+
     def hash_to_query_string(hash)
       hash.collect {|k,v| "#{k}=#{v}"}.join('&')
     end
