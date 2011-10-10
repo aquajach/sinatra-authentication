@@ -63,7 +63,7 @@ module Sinatra
             session[:return_to] = false
             redirect redirect_url
           else
-            redirect '/apologise'
+            redirect '/banquet'
           end
         else
           if Rack.const_defined?('Flash')
@@ -98,7 +98,7 @@ module Sinatra
           if Rack.const_defined?('Flash')
             flash[:notice] = "Account created."
           end
-          redirect '/apologise'
+          redirect '/banquet'
         else
           if Rack.const_defined?('Flash')
             error_fields = []
@@ -110,7 +110,7 @@ module Sinatra
             flash[:notice] = "您的下列注册资料出现问题:<br> #{error_fields.compact.join("、")}." unless error_fields.compact.empty?
           end
           if error_fields.compact.empty?
-            redirect '/apologise'
+            redirect '/banquet'
           else
             redirect '/signup?' + hash_to_query_string(params['user'])
           end
