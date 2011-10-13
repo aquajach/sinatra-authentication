@@ -93,28 +93,11 @@ module Sinatra
         params[:user][:birthday] = Date.strptime(params[:user][:birthday], "%Y-%m-%d") if params[:birth][:year].to_i * params[:birth][:month].to_i * params[:birth][:day].to_i != 0
         p "-----------------#{params[:user]}"
         @user = DmUser.create(params[:user])
-        if @user.valid && @user.id
+        if @user.errros.empty? && @user.id
           session[:user] = @user.id
-          if Rack.const_defined?('Flash')
-            flash[:notice] = "Account created."
-          end
           redirect '/banquet'
         else
-          if Rack.const_defined?('Flash')
-            error_fields = []
-            ["username","email","password_confirmation","password", "name", "birthday", "phone", "education", "university", "curriculum"].each do |property|
-              if @user.errors[property] and !@user.errors[property].empty?
-                error_fields << en_to_cn(property)
-              end
-            end
-            flash[:notice] = "您的下列注册资料出现问题:<br> #{error_fields.compact.join("、")}." unless error_fields.compact.empty?
-          end
-          if error_fields.compact.empty?
-            redirect '/banquet'
-          else
-            redirect '/signup?' + hash_to_query_string(params['user'])
-          end
-
+          redirect '/signup?' + hash_to_query_string(params['user'])
         end
       end
 
