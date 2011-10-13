@@ -93,7 +93,7 @@ module Sinatra
         params[:user][:birthday] = Date.strptime(params[:user][:birthday], "%Y-%m-%d") if params[:birth][:year].to_i * params[:birth][:month].to_i * params[:birth][:day].to_i != 0
         p "-----------------#{params[:user]}"
         @user = DmUser.create(params[:user])
-        if @user.errros.empty? && @user.id
+        if @user.erros.empty? && @user.id
           session[:user] = @user.id
           redirect '/banquet'
         else
